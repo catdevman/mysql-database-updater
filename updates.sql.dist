@@ -1,0 +1,2 @@
+SELECT now() FROM dual;
+SELECT Host, User from `mysql`.user;

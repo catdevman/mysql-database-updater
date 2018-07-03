@@ -3,6 +3,9 @@ language: go
 go:
   - "1.10.x"
 
+before_install:
+  - mysql -e 'CREATE DATABASE test;'
+
 install:
   # Add Godeps dependencies to GOPATH and PATH
   - export GOPATH="${TRAVIS_BUILD_DIR}/Godeps/_workspace:$GOPATH"
@@ -11,3 +14,6 @@ install:
 
 script:
   - go test -v ./...
+
+services:
+  - mysql

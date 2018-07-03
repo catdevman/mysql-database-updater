@@ -1,4 +1,4 @@
 environment,username,password,host
 local,root,password,127.0.0.1:3306
-test,root,password,127.0.0.1:3306
+test,root,,127.0.0.1:3306
 fail,fail,fail,fail:3306

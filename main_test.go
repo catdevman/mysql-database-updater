@@ -15,7 +15,7 @@ func TestGetDBConnectionParameters(t *testing.T) {
 	}
 
 	dbUsername, dbPassword, dbHost = getDBConnectionParameters("testdata/environments.csv", "test")
-	if dbUsername != "root" || dbPassword != "password" || dbHost != "127.0.0.1:3306" {
+	if dbUsername != "root" || dbPassword != "" || dbHost != "127.0.0.1:3306" {
 		t.Fail()
 	}
 

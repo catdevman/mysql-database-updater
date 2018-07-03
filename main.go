@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 )
@@ -18,8 +19,8 @@ var (
 )
 
 func main() {
-	flag.StringVar(&environment, "env", "local", "Choose environment from environments file")
 	flag.StringVar(&environmentsFile, "envFile", "environments.csv", "Choose path for environments file")
+	flag.StringVar(&environment, "env", "local", "Choose environment from environments file")
 	flag.StringVar(&sqlFile, "sqlFile", "updates.sql", "Choose path for sql file")
 	flag.StringVar(&databasePrefix, "dbPrefix", "db_", "Choose a prefix for the databases that this will loop over")
 	flag.Parse()
@@ -46,6 +47,24 @@ func main() {
 		log.Println(err)
 		os.Exit(4)
 	}
+
+	dbs := getDatabasesChannel(databases)
+
+	results := createWorkers(dbs, sqlStr, db)
+
+	for val := range merge(results...) {
+		log.Println(val)
+	}
+}
+
+func createWorkers(ch chan string, sqlStr string, dbConn *sql.DB) (results []chan string) {
+	for i := 0; i < runtime.NumCPU(); i++ {
+		results = append(results, processSQL(ch, sqlStr, dbConn))
+	}
+	return
+}
+
+func getDatabasesChannel(databases []string) chan string {
 	dbs := make(chan string)
 	go func() {
 		for _, database := range databases {
@@ -54,18 +73,7 @@ func main() {
 		close(dbs)
 	}()
 
-	r1 := processSQL(dbs, sqlStr)
-	r2 := processSQL(dbs, sqlStr)
-	r3 := processSQL(dbs, sqlStr)
-	r4 := processSQL(dbs, sqlStr)
-	r5 := processSQL(dbs, sqlStr)
-	r6 := processSQL(dbs, sqlStr)
-	r7 := processSQL(dbs, sqlStr)
-	r8 := processSQL(dbs, sqlStr)
-
-	for val := range merge(r1, r2, r3, r4, r5, r6, r7, r8) {
-		log.Println(val)
-	}
+	return dbs
 }
 
 func getSQLContents(filename string) (string, error) {
@@ -115,7 +123,7 @@ func getDatabases() ([]string, error) {
 	var d string
 	for rows.Next() {
 		rows.Scan(&d)
-		if strings.HasPrefix(d, databasePrefix) {
+		if strings.HasPrefix(d, databasePrefix) && !strings.HasPrefix(d, "pivot_common") {
 			databases = append(databases, d)
 		}
 	}
@@ -125,30 +133,25 @@ func getDatabases() ([]string, error) {
 	return databases, err
 }
 
-func runSQL(database string, sqlStr string) error {
-	db, err := getDatabaseConnection(database)
-	if err != nil {
-		log.Println(err)
-	}
-
-	_, err = db.Exec(sqlStr)
-	db.Close()
+func runMultiSQL(sqlStr string, db *sql.DB) error {
+	_, err := db.Exec(sqlStr)
 	return err
 }
 
-func processSQL(ch chan string, sqlStr string) chan string {
+func processSQL(ch chan string, sqlStr string, dbConn *sql.DB) chan string {
 	out := make(chan string)
-	go func() {
+	go func(s string, db *sql.DB) {
 		for database := range ch {
 			output := "Completed with: " + database
-			err := runSQL(database, sqlStr)
+			query := fmt.Sprintf("use `%s`; %s", database, s)
+			err := runMultiSQL(query, db)
 			if err != nil {
 				output = err.Error()
 			}
 			out <- output
 		}
 		close(out)
-	}()
+	}(sqlStr, dbConn)
 
 	return out
 }

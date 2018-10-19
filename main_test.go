@@ -6,28 +6,37 @@ import (
 	"testing"
 )
 
-const dsnStringTest = "root:password@tcp(127.0.0.1:3306)/pivot2_apigiliy?multiStatements=true"
+const dsnStringTest = "root:password@tcp(127.0.0.1:3306)/test?multiStatements=true"
 
-func TestGetDBConnectionParameters(t *testing.T) {
+func TestGetDBConnectionParametersLocalEnvironment(t *testing.T) {
 	dbUsername, dbPassword, dbHost = getDBConnectionParameters("testdata/environments.csv", "local")
 	if dbUsername != "root" || dbPassword != "password" || dbHost != "127.0.0.1:3306" {
 		t.Fail()
 	}
+}
 
+func TestGetDBConnectionParametersTestEnvironment(t *testing.T) {
 	dbUsername, dbPassword, dbHost = getDBConnectionParameters("testdata/environments.csv", "test")
 	if dbUsername != "root" || dbPassword != "" || dbHost != "127.0.0.1:3306" {
 		t.Fail()
 	}
+}
 
+func TestGetDBConnectionParametersFailEnvironment(t *testing.T) {
 	dbUsername, dbPassword, dbHost = getDBConnectionParameters("testdata/environments.csv", "fail")
 	if dbUsername != "fail" || dbPassword != "fail" || dbHost != "fail:3306" {
 		t.Fail()
 	}
+}
 
+func TestGetDBConnectionParametersMissingEnvironment(t *testing.T) {
 	dbUsername, dbPassword, dbHost = getDBConnectionParameters("testdata/environments.csv", "bob")
 	if dbUsername != "" || dbPassword != "" || dbHost != "" {
 		t.Fail()
 	}
+}
+
+func TestGetDBConnectionParametersMissingFile(t *testing.T) {
 
 	dbUsername, dbPassword, dbHost = getDBConnectionParameters("testdata/fail.fail", "fail")
 	if dbUsername != "" || dbPassword != "" || dbHost != "" {
@@ -36,7 +45,7 @@ func TestGetDBConnectionParameters(t *testing.T) {
 }
 
 func TestBuildDsnString(t *testing.T) {
-	val := buildDsnString("root", "password", "127.0.0.1:3306", "pivot2_apigiliy")
+	val := buildDsnString("root", "password", "127.0.0.1:3306", "test")
 	if val != dsnStringTest {
 		t.Fail()
 	}
@@ -104,13 +113,6 @@ func TestGetDatabases(t *testing.T) {
 	dbUsername, dbPassword, dbHost = getDBConnectionParameters("testdata/environments.csv", "fail")
 	_, err := getDatabases()
 	if err == nil {
-		t.Fail()
-	}
-
-	dbUsername, dbPassword, dbHost = getDBConnectionParameters("testdata/environments.csv", "test")
-	databases, _ := getDatabases()
-
-	if len(databases) == 0 {
 		t.Fail()
 	}
 }

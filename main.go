@@ -123,7 +123,7 @@ func getDatabases() ([]string, error) {
 	var d string
 	for rows.Next() {
 		rows.Scan(&d)
-		if strings.HasPrefix(d, databasePrefix) && !strings.HasPrefix(d, "pivot_common") {
+		if strings.HasPrefix(d, databasePrefix) {
 			databases = append(databases, d)
 		}
 	}

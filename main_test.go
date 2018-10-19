@@ -54,7 +54,7 @@ func TestMerge(t *testing.T) {
 		close(in2)
 	}()
 	count := 0
-	for _ = range merge(in1, in2) {
+	for range merge(in1, in2) {
 		count++
 	}
 
@@ -82,7 +82,7 @@ func TestProcessSQL(t *testing.T) {
 	c := processSQL(databases, "select fail from dual;", db)
 
 	count := 0
-	for _ = range c {
+	for range c {
 		count++
 	}
 
@@ -130,7 +130,7 @@ func TestGetDatabasesChannel(t *testing.T) {
 	databases := []string{"test1", "test2"}
 	dbs := getDatabasesChannel(databases)
 	c := 0
-	for _ = range dbs {
+	for range dbs {
 		c++
 	}
 	if c != 2 {
@@ -144,7 +144,7 @@ func TestCreateWorkers(t *testing.T) {
 	defer db.Close()
 	ch := make(chan string)
 	results := createWorkers(ch, "select * from dual", db)
-	for _ = range results {
+	for range results {
 		c++
 	}
 	if c != runtime.NumCPU() {

@@ -3,6 +3,10 @@ language: go
 go:
   - "1.10.x"
 
+env:
+  global:
+    secure: "a9Db6QzgRtRVDgzX6igsEVE9GDYCY+PGUJp9j7JRplsdytP0GPVr3T8iMuB968G8YjImGxKhM+kDzO55NOYrx98L4Ydz6vNbjHsouHYIuKqLwiuKE+f16E2fE4VPjBALfyDzQnwLtrR6u0Vdzt4CmZ78QmRarqN9uhvTRG+Q8/pFeP08UtpbX9d7zzEKUGKV2wAFJ0U7X486Rv25yFAExvnEw4mH2wcSQVWMMpac/tjzU3kayyKwTUO8WiVTl2HRjeWyDL+b7umiQEJAuFxOoBJJusTM0KhaRcdFqnALRvo4Pm60zwvW8UV4KPz6IPDu844pdYn6n8sf/7t1QsPWUsjNu37BMjaw4iBW3VyIkpPUNGdECwVilJGIEocJ586xdbTaB3m8uzubltmKLYYJ8tCaCOg/OGO9TOD6wZitm9a++jpxfhffIRz1uYyGN/XP8z4HNFpNHUJuBnnN6r+dohuVADU1+5C8ZqQ1Lln1N3rCsd8u+nNflIQnf3fsiwH6pA8GHg/JSozd+77mNyzHFpZ6iRfkwUEnLINwhIhRYyzlz0zPwmpwpRv9KraqrKpwcR8+Uw8nu6YByI/vKP7zb46wuHbOvxJ7m1gpEzRDubw9XZg1B9oBraL5QQca70qbhwRR9ExTrDlVrzUSn5l1cE14Q6T9f/hjBVwYWlUzQN8="
+
 before_install:
   - mysql -e 'CREATE DATABASE test;'
 
@@ -17,3 +21,17 @@ script:
 
 services:
   - mysql
+
+before_deploy:
+  # Set up git user name and tag this commit
+  - git config --local user.name "YOUR GIT USER NAME"
+  - git config --local user.email "YOUR GIT USER EMAIL"
+  - git tag "$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)"
+  - go build main.go
+deploy:
+  provider: releases
+  api_key: "$GITHUB_OAUTH_TOKEN"
+  file: "main"
+  skip_cleanup: true
+  on:
+    tags: true

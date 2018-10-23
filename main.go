@@ -15,16 +15,19 @@ import (
 )
 
 var (
-	dbUsername, dbPassword, dbHost, defaultDatabase, environment, sqlFile, environmentsFile, databasePrefix string
+	dbUsername, dbPassword, dbHost, defaultDatabase, environment, sqlFile, environmentsFile, databasePrefix, ignoreDatabasesFlag string
+	ignoreDatabases                                                                                                              []string
 )
 
 func main() {
 	flag.StringVar(&environmentsFile, "envFile", "environments.csv", "Choose path for environments file")
 	flag.StringVar(&environment, "env", "local", "Choose environment from environments file")
 	flag.StringVar(&sqlFile, "sqlFile", "updates.sql", "Choose path for sql file")
-	flag.StringVar(&databasePrefix, "dbPrefix", "db_", "Choose a prefix for the databases that this will loop over")
+	flag.StringVar(&databasePrefix, "dbPrefix", "", "Choose a prefix for the databases that this will loop over (ex: db_)")
+	flag.StringVar(&ignoreDatabasesFlag, "ignoredDbs", "", "Databases to ignore (ex: db1,db2 without prefix)")
 	flag.Parse()
 	dbUsername, dbPassword, dbHost = getDBConnectionParameters(environmentsFile, environment)
+	ignoreDatabases = getDatabasesToIgnore(ignoreDatabasesFlag, databasePrefix)
 	db, err := getDatabaseConnection(defaultDatabase)
 	if err != nil {
 		log.Println(err)
@@ -42,7 +45,7 @@ func main() {
 		os.Exit(3)
 	}
 
-	databases, err := getDatabases()
+	databases, err := getDatabases(ignoreDatabases)
 	if err != nil {
 		log.Println(err)
 		os.Exit(4)
@@ -109,7 +112,7 @@ func getDBConnectionParameters(filename string, environment string) (string, str
 	return u, p, h
 }
 
-func getDatabases() ([]string, error) {
+func getDatabases(ignoredDatabases []string) ([]string, error) {
 	var databases []string
 	db, err := getDatabaseConnection(defaultDatabase)
 	if err != nil {
@@ -123,7 +126,7 @@ func getDatabases() ([]string, error) {
 	var d string
 	for rows.Next() {
 		rows.Scan(&d)
-		if strings.HasPrefix(d, databasePrefix) {
+		if strings.HasPrefix(d, databasePrefix) && !Contains(ignoredDatabases, d) {
 			databases = append(databases, d)
 		}
 	}
@@ -175,4 +178,23 @@ func merge(cs ...chan string) chan string {
 		close(out)
 	}()
 	return out
+}
+
+func getDatabasesToIgnore(ignoreDatabasesFlag, databasePrefix string) (ignoreDbs []string) {
+	var dbs []string
+	dbs = strings.Split(ignoreDatabasesFlag, ",")
+	for _, d := range dbs {
+		ignoreDbs = append(ignoreDbs, databasePrefix+d)
+	}
+	return ignoreDbs
+
+}
+
+func Contains(a []string, x string) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
 }

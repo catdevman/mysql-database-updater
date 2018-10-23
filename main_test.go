@@ -111,8 +111,16 @@ func TestGetSQLContents(t *testing.T) {
 }
 func TestGetDatabases(t *testing.T) {
 	dbUsername, dbPassword, dbHost = getDBConnectionParameters("testdata/environments.csv", "fail")
-	_, err := getDatabases()
+	ignoreDatabases := []string{}
+	_, err := getDatabases(ignoreDatabases)
 	if err == nil {
+		t.Fail()
+	}
+
+	dbUsername, dbPassword, dbHost = getDBConnectionParameters("testdata/environments.csv", "test")
+	databases, _ := getDatabases(ignoreDatabases)
+
+	if len(databases) == 0 {
 		t.Fail()
 	}
 }
@@ -151,5 +159,23 @@ func TestCreateWorkers(t *testing.T) {
 	}
 	if c != runtime.NumCPU() {
 		t.Fail()
+	}
+}
+func TestGetDatabasesToIgnore(t *testing.T) {
+	var expectedDbsWithPrefix = []string{"db_db1", "db_db2"}
+	var expectedDbs = []string{"db1", "db2"}
+
+	ignoreDbs := getDatabasesToIgnore("db1,db2", "db_")
+	for i, db := range ignoreDbs {
+		if db != expectedDbsWithPrefix[i] {
+			t.Fail()
+		}
+	}
+
+	ignoreDbs = getDatabasesToIgnore("db1,db2", "")
+	for y, d := range ignoreDbs {
+		if d != expectedDbs[y] {
+			t.Fail()
+		}
 	}
 }

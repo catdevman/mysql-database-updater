@@ -126,7 +126,7 @@ func getDatabases(ignoredDatabases []string) ([]string, error) {
 	var d string
 	for rows.Next() {
 		rows.Scan(&d)
-		if strings.HasPrefix(d, databasePrefix) && !Contains(ignoredDatabases, d) {
+		if strings.HasPrefix(d, databasePrefix) && !contains(ignoredDatabases, d) {
 			databases = append(databases, d)
 		}
 	}
@@ -190,7 +190,7 @@ func getDatabasesToIgnore(ignoreDatabasesFlag, databasePrefix string) (ignoreDbs
 
 }
 
-func Contains(a []string, x string) bool {
+func contains(a []string, x string) bool {
 	for _, n := range a {
 		if x == n {
 			return true

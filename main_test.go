@@ -179,3 +179,19 @@ func TestGetDatabasesToIgnore(t *testing.T) {
 		}
 	}
 }
+
+func TestContains(t *testing.T) {
+	var testStr = "Anything"
+	var notIn = []string{"Not", "In", "Here"}
+	var in = []string{"Anything", "Is", "Possible"}
+
+	expected := contains(notIn, testStr)
+	if expected != false {
+		t.Fail()
+	}
+
+	expected = contains(in, testStr)
+	if expected != true {
+		t.Fail()
+	}
+}

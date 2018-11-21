@@ -1,4 +1,4 @@
-# **MySQL Database Updater** [![Build Status](https://travis-ci.org/catdevman/mysql-database-updater.svg?branch=master)](https://travis-ci.org/catdevman/mysql-database-updater) [![Go Report Card](https://goreportcard.com/badge/github.com/catdevman/mysql-database-updater)](https://goreportcard.com/report/github.com/catdevman/mysql-database-updater)
+# **MySQL Database Updater** [![Build Status](https://travis-ci.org/catdevman/mysql-database-updater.svg?branch=master)](https://travis-ci.org/catdevman/mysql-database-updater) [![Go Report Card](https://goreportcard.com/badge/github.com/catdevman/mysql-database-updater)](https://goreportcard.com/report/github.com/catdevman/mysql-database-updater) [![codecov](https://codecov.io/gh/catdevman/mysql-database-updater/branch/master/graph/badge.svg)](https://codecov.io/gh/catdevman/mysql-database-updater)
 
 ## Usage
 |   Flag   | Value Type  |                          Description                       |     Default      |

@@ -28,7 +28,7 @@ before_deploy:
   - git config --local user.name "Lucsa Pearson"
   - git config --local user.email "catdevman@gmail.com"
   - git tag "$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)"
-  - go build main.go -o mysql-database-updater
+  - go build -o mysql-database-updater main.go 
 deploy:
   provider: releases
   api_key: "$GITHUB_OAUTH_TOKEN"
